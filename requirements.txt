@@ -1,0 +1,4 @@
+openai-whisper
+openai
+# PyTorch (GPU版) 需单独安装：
+# pip install torch --index-url https://download.pytorch.org/whl/cu121

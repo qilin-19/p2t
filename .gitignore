@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# 虚拟环境
+venv/
+
+# 输入输出
+videos/
+output/
+
+# 临时文件
+temp_audio*.wav
+*.tmp
+
+# 系统文件
+Thumbs.db
+.DS_Store
+Desktop.ini
