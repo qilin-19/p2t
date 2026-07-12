@@ -7,7 +7,7 @@ AI 总结模块
 """
 import os
 from openai import OpenAI
-from agent import classify_content, get_strategy, execute_summary
+from agent import run_agent
 
 
 def _get_client():
@@ -55,21 +55,25 @@ def summarize_text(text):
 
 def summarize_with_agent(text):
     """
-    ★ Agent 版本：先判断类型，再按类型总结
-    Agent 工作流: 观察 → 判断 → 决策 → 执行
+    ★ Agent 版本：先判断类型，再按类型总结（含自我验证+重试）
+    Agent 工作流: 观察 → 判断 → 决策 → 执行 → 验证 → (不合格则重试)
     """
     client, model = _get_client()
 
     if len(text.strip()) < 50:
         return "（原文太短，无需总结）"
 
-    # 步骤 1+2：Agent 观察 + 判断内容类型
-    content_type = classify_content(text, client, model)
+    # Agent 统一入口——内部自己完成全流程
+    result = run_agent(text, client, model)
 
-    # 步骤 3：Agent 根据类型选策略
-    strategy_prompt, strategy_name = get_strategy(content_type)
+    summary = result["summary"]
 
-    # 步骤 4：Agent 用选中策略执行总结
-    summary = execute_summary(text, strategy_prompt, strategy_name, client, model)
+    # 如果最终未通过质检，在总结末尾标注
+    if not result["passed_qa"]:
+        summary = (
+            f"{summary}\n\n"
+            f"⚠️【注意：此总结经过 {result['retries_used'] + 1} 次尝试"
+            f"仍未通过质检，内容仅供参考】"
+        )
 
     return summary
